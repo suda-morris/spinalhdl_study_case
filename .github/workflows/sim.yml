@@ -1,0 +1,34 @@
+name: Simulation && Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        designs: [MyAdder]
+
+    steps:
+    - uses: actions/checkout@main
+    - name: Set up JDK
+      uses: actions/setup-java@main
+      with:
+        java-version: 1.11
+    - name: Install Verilator
+      run: sudo apt install verilator
+    - name: Run Simulation
+      run: sbt "runMain mylib.${{ matrix.designs }}Sim"
+    - name: Upload Kernel Image
+      uses: actions/upload-artifact@main
+      with:
+        name: ${{ matrix.designs }}-simulation-artifact
+        path: |
+          simWorkspace/${{ matrix.designs }}/rtl
+          simWorkspace/${{ matrix.designs }}/test.vcd
